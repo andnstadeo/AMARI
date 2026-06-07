@@ -1,34 +1,11 @@
-# 🏨 AMARI Urban Escape - Booking System
+# 🏨 Resort Business Website
 
-A comprehensive web-based reservation platform for AMARI Urban Escape, a private resort in Pandi, Bulacan. This system enables guests to browse packages, check availability, make reservations, and process payments, while providing administrators with complete booking management capabilities.
+A comprehensive web-based booking platform. This system enables guests to browse packages, check availability, make reservations, and process payments, while providing administrators with management capabilities.
 
-![AMARI Logo](images/logo.jpg)
-
-## 📋 Table of Contents
-
-- [🎯 Project Overview](#-project-overview)
-- [✨ Features](#-features)
-- [🛠️ Technology Stack](#️-technology-stack)
-- [📁 Project Structure](#-project-structure)
-- [🚀 Installation & Setup](#-installation--setup)
-- [📊 Database Schema](#-database-schema)
-- [🎪 User Journey](#-user-journey)
-- [👨‍💼 Admin Panel](#-admin-panel)
-- [📱 API Endpoints](#-api-endpoints)
-- [🌐 Deployment Guide](#-deployment-guide)
-- [🔧 Configuration](#-configuration)
-- [🐛 Troubleshooting](#-troubleshooting)
-- [📞 Support](#-support)
-
-## 🎯 Project Overview
-
-AMARI Urban Escape Booking System is a modern, responsive web application designed to streamline the reservation process for a private resort. The system replaces traditional manual booking methods with an automated, user-friendly online platform.
 
 ### 🌟 Key Benefits
-- **24/7 Availability** - Guests can book anytime
+- **24/7 Availability** - Guests can check anytime
 - **Real-time Updates** - Instant availability checking
-- **Automated Management** - Reduced administrative overhead
-- **Multiple Payment Options** - Flexible payment processing
 - **Mobile-Friendly** - Responsive design for all devices
 
 ## ✨ Features
@@ -49,10 +26,8 @@ AMARI Urban Escape Booking System is a modern, responsive web application design
 - **Real-time Updates** - Live data synchronization
 - **Secure Authentication** - Session-based admin access
 
-### 🏖️ Resort Packages
-1. **Day Tour** - ₱12,500 (Weekdays) / ₱15,000 (Weekends) - 8AM to 5PM (9 hours)
-2. **Overnight** - ₱19,500 (Weekdays) / ₱22,500 (Weekends) - 3PM to 12NN (21 hours)
-3. **Night Tour** - ₱13,500 (Weekdays) / ₱16,000 (Weekends) - 8PM to 6AM (12 hours)
+### Packages
+Available packages and pricing are configurable in the application (`rates.html` and `js/book.js`). Update those files to change offerings and rates.
 
 ## 🛠️ Technology Stack
 
@@ -78,7 +53,7 @@ AMARI Urban Escape Booking System is a modern, responsive web application design
 ## 📁 Project Structure
 
 ```
-AMARI/
+project-root/
 ├── 📄 server.js                 # Main server file
 ├── 📄 package.json             # Dependencies and scripts
 ├── 📄 README.md                # Project documentation
@@ -131,7 +106,7 @@ AMARI/
 1. **Clone the Repository**
    ```bash
    git clone <repository-url>
-   cd AMARI
+   cd <project-folder>
    ```
 
 2. **Install Dependencies**
@@ -153,11 +128,18 @@ AMARI/
    - **Admin Panel:** http://localhost:3000/admin
    - **Login Page:** http://localhost:3000/login
 
-### Default Admin Credentials
-- **Username:** `admin`
-- **Password:** `amari2024`
+### Admin Credentials (secure)
+This project uses environment variables for credentials. Do not store plaintext passwords in the repository.
 
-⚠️ **Security Note:** Change the default admin credentials in production!
+Create a `.env` file (see `.env.example`) and set `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH` (bcrypt). Use `npm run gen-admin-hash` to generate the hash locally.
+
+Example (local `.env`):
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=<your_bcrypt_hash_here>
+SESSION_SECRET=<your_session_secret_here>
+NODE_ENV=production
+```
 
 ## 📊 Database Schema
 
@@ -374,14 +356,7 @@ Content-Type: application/json
 
 ### Environment Configuration
 
-Create a `.env` file for production:
-```env
-NODE_ENV=production
-PORT=3000
-ADMIN_USERNAME=your_admin_username
-ADMIN_PASSWORD=your_secure_password
-SESSION_SECRET=your_super_secret_session_key
-```
+Do not store secrets in this README. Use `.env.example` as a template and create a local `.env` file with secure values for deployment. Never commit your `.env` file to source control.
 
 ### Pre-deployment Checklist
 
@@ -398,16 +373,14 @@ SESSION_SECRET=your_super_secret_session_key
 
 ### Server Configuration (`server.js`)
 
-```javascript
-// Default settings
-const PORT = process.env.PORT || 3000;
-const SESSION_SECRET = 'amari-admin-secret-key-2024';
+Configuration is read from environment variables. Example in `.env` (see `.env.example`):
 
-// Admin credentials
-const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'amari2024'
-};
+```javascript
+const PORT = process.env.PORT || 3000;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+// ADMIN_PASSWORD_HASH should be a bcrypt hash stored in env
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 ```
 
 ### Package Configuration (`package.json`)
@@ -535,22 +508,3 @@ app.use((req, res, next) => {
 This project is licensed under the ISC License. See the package.json file for details.
 
 ---
-
-## 🎉 Quick Start Summary
-
-```bash
-# 1. Clone and install
-git clone <repo-url> && cd AMARI && npm install
-
-# 2. Start development
-npm run dev
-
-# 3. Access application
-# Website: http://localhost:3000
-# Admin: http://localhost:3000/admin 
-
-**🏨 AMARI Urban Escape** - *Creating memorable experiences through technology*
-
----
-
-*Last updated: July 7, 2025*

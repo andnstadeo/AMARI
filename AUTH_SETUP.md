@@ -1,4 +1,4 @@
-# AMARI Booking System - Authentication Setup
+# Booking System - Authentication Setup
 
 ## Overview
 The booking system now includes a secure admin authentication system that protects the admin panel and reservation management features.
@@ -10,10 +10,24 @@ The booking system now includes a secure admin authentication system that protec
 4. **Logout Function**: Secure logout that destroys the session
 
 ## Admin Credentials
-- **Username**: `admin`
-- **Password**: `amari2024`
+Admin credentials are no longer stored in plaintext in the repository. For production, place secrets in a `.env` file and keep it out of source control.
 
-⚠️ **Important**: Change the default password in `server.js` for production use!
+Create a `.env` file (see `.env.example`) and set these values:
+
+```env
+ADMIN_USERNAME=admin
+# Generate a bcrypt hash and paste it here
+ADMIN_PASSWORD_HASH=<your_bcrypt_hash_here>
+SESSION_SECRET=<your_session_secret_here>
+NODE_ENV=production
+```
+
+To generate the bcrypt hash locally, run:
+
+```bash
+npm run gen-admin-hash
+# then copy the printed hash into ADMIN_PASSWORD_HASH in your .env
+```
 
 ## Setup Instructions
 
@@ -91,16 +105,22 @@ package.json         # Dependencies including express-session
 ## Development Notes
 
 ### Adding New Admin Users
-To add more admin users, modify the `ADMIN_CREDENTIALS` object in `server.js` or implement a user database.
+To add more admin users, implement a user database (preferred) or extend the authentication system to load users from a secure store. Do not add plaintext credentials in source files. Store hashed passwords (bcrypt) and use environment-managed secrets in production.
 
 ### Changing Admin Password
-Edit the `ADMIN_CREDENTIALS` object in `server.js`:
-```javascript
-const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'your-new-secure-password'
-};
+To change the admin password in a safe way:
+
+1. Run the helper to generate a bcrypt hash:
+
+```bash
+npm run gen-admin-hash
 ```
+
+2. Update your local `.env` file: set `ADMIN_PASSWORD_HASH` to the generated hash.
+
+3. Restart the server.
+
+Do NOT commit `.env` to source control. In production, use your deployment provider's secret management.
 
 ### Production Deployment
 1. Set `cookie.secure = true` for HTTPS

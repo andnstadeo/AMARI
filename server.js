@@ -1,30 +1,48 @@
 const express = require('express');
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.static('.'));
 
+// Security middlewares
+app.use(helmet());
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }); // 15 minutes, 100 requests
+app.use(limiter);
+
 // Session configuration
 app.use(session({
-    secret: 'amari-admin-secret-key-2024',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true in production with HTTPS
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
 
-// Admin credentials (in production, store in database with hashed passwords)
-const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'amari2024' // Change this to a secure password
-};
+// Admin configuration: prefer hashed password in env var
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || null; // bcrypt hash expected
+const DEV_FALLBACK_PASSWORD = process.env.DEV_ADMIN_PASSWORD || null;
+if (!ADMIN_PASSWORD_HASH && process.env.NODE_ENV === 'production') {
+    console.error('WARNING: ADMIN_PASSWORD_HASH not set in production environment. Exiting.');
+    process.exit(1);
+}
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+    console.error('ERROR: SESSION_SECRET not set in production environment. Exiting.');
+    process.exit(1);
+}
 
 // Authentication middleware
 function requireAuth(req, res, next) {
@@ -77,23 +95,38 @@ function writeDatabase(data) {
 
 // Authentication Routes
 // Login endpoint
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Username and password required' });
+    }
+
+    try {
+        if (username !== ADMIN_USERNAME) {
+            return res.status(401).json({ success: false, message: 'Invalid username or password' });
+        }
+
+        if (ADMIN_PASSWORD_HASH) {
+            const match = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+            if (!match) {
+                return res.status(401).json({ success: false, message: 'Invalid username or password' });
+            }
+        } else {
+            // Dev fallback only
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(500).json({ success: false, message: 'Server not configured' });
+            }
+            if (password !== DEV_FALLBACK_PASSWORD) {
+                return res.status(401).json({ success: false, message: 'Invalid username or password' });
+            }
+        }
+
         req.session.isAuthenticated = true;
         req.session.username = username;
-        
-        res.json({
-            success: true,
-            message: 'Login successful',
-            user: { username }
-        });
-    } else {
-        res.status(401).json({
-            success: false,
-            message: 'Invalid username or password'
-        });
+        res.json({ success: true, message: 'Login successful', user: { username } });
+    } catch (err) {
+        console.error('Login error', err);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
