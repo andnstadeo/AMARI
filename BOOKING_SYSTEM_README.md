@@ -1,6 +1,6 @@
-# AMARI Urban Escape - Booking System
+# Booking System - Documentation
 
-This is a complete booking system for AMARI Urban Escape with a JSON-based database and admin panel for managing reservations.
+This is a complete, generic booking system with a JSON-based database and admin panel for managing reservations. It is intended as a reusable template; update branding and content for your client.
 
 ## Features
 
@@ -69,9 +69,7 @@ The system uses a JSON file located at `database/reservations.json` to store all
 
 ## Package Types
 
-1. **Day Tour** - ₱12,500 (8AM - 5PM, 9 hours)
-2. **Overnight** - ₱16,500 (3PM - 12NN, 21 hours)
-3. **Night Tour** - ₱13,500 (8PM - 6AM, 12 hours)
+Package types and pricing are configurable in `rates.html` and `js/book.js`. Remove any client-specific pricing from this file before making the repository public.
 
 ## Guest Information Collected
 
